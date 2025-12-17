@@ -1,0 +1,36 @@
+
+name: NodeJS with Webpack
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [ "20.x", "22.x" ]  # drop 18.x due to EBADENGINE
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'   # caches node_modules based on package-lock.json
+
+      - name: Install dependencies (CI)
+        run: |
+          npm ci --no-audit --no-fund
+        env:
+          CI: true
+
+      - name: Build with webpack
+        run: |
+          npx webpack --mode=production
+               env:
